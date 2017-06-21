@@ -33,10 +33,14 @@ public class AnagramDictionary {
     private static final int MIN_NUM_ANAGRAMS = 5;
     private static final int DEFAULT_WORD_LENGTH = 3;
     private static final int MAX_WORD_LENGTH = 7;
+
+    Integer wordLength = DEFAULT_WORD_LENGTH;
+
     private Random random = new Random();
     ArrayList<String> wordList = new ArrayList<>();
     HashSet wordSet = new HashSet();
     HashMap<String, ArrayList<String>> lettersToWord = new HashMap();
+    HashMap<Integer, ArrayList<String>> sizeToWords = new HashMap<>();
 
 
     public AnagramDictionary(Reader reader) throws IOException {
@@ -45,6 +49,7 @@ public class AnagramDictionary {
         while ((line = in.readLine()) != null) {
             String word = line.trim();
             String sortedWord = sortLetters(word);
+            // add to letters to word hashmap
             if (lettersToWord.containsKey(sortedWord)) {
                 lettersToWord.get(sortedWord).add(word);
             } else {
@@ -52,6 +57,16 @@ public class AnagramDictionary {
                 anagrams.add(word);
                 lettersToWord.put(sortedWord, anagrams);
             }
+
+            // add to size to words hashmap
+            if (sizeToWords.containsKey(word.length())) {
+                sizeToWords.get(word.length()).add(word);
+            } else {
+                ArrayList<String> anagrams = new ArrayList<>();
+                anagrams.add(word);
+                sizeToWords.put(word.length(), anagrams);
+            }
+
             wordList.add(word);
             wordSet.add(word);
         }
@@ -123,11 +138,15 @@ public class AnagramDictionary {
         int rnd = random.nextInt(wordList.size());
         String word = wordList.get(rnd);
 
-        while (!(lettersToWord.get(sortLetters(word)).size() >= 5)) {
+        while (!(lettersToWord.get(sortLetters(word)).size() >= MIN_NUM_ANAGRAMS)) {
             rnd ++;
             word = wordList.get(rnd);
         }
-
+        if (wordLength < MAX_WORD_LENGTH) {
+            wordLength ++;
+        } else {
+            wordLength = random.nextInt(sizeToWords.keySet().size());
+        }
         return word;
     }
 }
