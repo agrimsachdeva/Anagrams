@@ -36,7 +36,7 @@ public class AnagramDictionary {
     private Random random = new Random();
     ArrayList<String> wordList = new ArrayList<>();
     HashSet wordSet = new HashSet();
-    HashMap lettersToWord = new HashMap();
+    HashMap<String, ArrayList<String>> lettersToWord = new HashMap();
 
 
     public AnagramDictionary(Reader reader) throws IOException {
@@ -44,19 +44,33 @@ public class AnagramDictionary {
         String line;
         while ((line = in.readLine()) != null) {
             String word = line.trim();
+            String sortedWord = sortLetters(word);
+            if (lettersToWord.containsKey(sortedWord)) {
+                lettersToWord.get(sortedWord).add(word);
+            } else {
+                ArrayList<String> anagrams = new ArrayList<>();
+                anagrams.add(word);
+                lettersToWord.put(sortedWord, anagrams);
+            }
             wordList.add(word);
+            wordSet.add(word);
         }
-        Log.d("wordList", wordList.toString());
+        Log.d("lettersToWord", lettersToWord.toString());
     }
 
     public boolean isGoodWord(String word, String base) {
-        return true;
+        Boolean result = false;
+        if (wordSet.contains(word) && (!word.contains(base))) {
+            result = true;
+        }
+        Log.d("result boolean", result.toString());
+        return result;
     }
 
     public List<String> getAnagrams(String targetWord) {
         ArrayList<String> result = new ArrayList<String>();
 
-        for (String word:wordList) {
+        for (String word : wordList) {
             if ((word.length() == targetWord.length()) && sortLetters(word).equals(sortLetters(targetWord))) {
                 result.add(word);
             }
@@ -87,10 +101,33 @@ public class AnagramDictionary {
 
     public List<String> getAnagramsWithOneMoreLetter(String word) {
         ArrayList<String> result = new ArrayList<String>();
+
+        char[] alphabet = "abcdefghijklmnopqrstuvwxyz".toCharArray();
+
+        for (Character letter : alphabet) {
+            String newWord = word + letter.toString();
+            String sortedWord = sortLetters(newWord);
+            if (lettersToWord.containsKey(sortedWord)) {
+                for (String temp : lettersToWord.get(sortedWord)) {
+                    result.add(temp);
+                }
+            }
+        }
+
+        Log.d("anagram one more letter", result.toString());
+
         return result;
     }
 
     public String pickGoodStarterWord() {
-        return "post";
+        int rnd = random.nextInt(wordList.size());
+        String word = wordList.get(rnd);
+
+        while (!(lettersToWord.get(sortLetters(word)).size() >= 5)) {
+            rnd ++;
+            word = wordList.get(rnd);
+        }
+
+        return word;
     }
 }
